@@ -12,7 +12,7 @@ const Footer = () => {
 
         {/* Right Side - Optional Links */}
         <div className="flex space-x-4">
-          <Link to="/" className="hover:text-blue-600 transition">
+          <Link to="/landing" className="hover:text-blue-600 transition">
             Home
           </Link>
           <Link to="/dashboard" className="hover:text-blue-600 transition">

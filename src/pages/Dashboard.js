@@ -4,6 +4,50 @@ import "react-toastify/dist/ReactToastify.css";
 
 import axios from "../api/axios";
 
+/* Helpers for formatting AI responses */
+const formatAnswerBlocks = (text) => {
+    if (!text) return [];
+    const normalized = String(text).replace(/\r\n/g, "\n");
+    const paragraphs = normalized.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+    return paragraphs;
+};
+
+const renderParagraph = (paragraph, idx) => {
+    const lines = paragraph.split("\n").map((l) => l.trim()).filter(Boolean);
+    const isAllBullets = lines.length > 1 && lines.every((l) => /^(-|\*|\d+\.)\s+/.test(l));
+    const parseBold = (text) => {
+        return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) => {
+            if (/^\*\*[^*]+\*\*$/.test(part)) {
+                return <strong key={i}>{part.slice(2, -2)}</strong>;
+            }
+            return <React.Fragment key={i}>{part}</React.Fragment>;
+        });
+    };
+
+    if (isAllBullets) {
+        const ordered = lines.every((l) => /^\d+\.\s+/.test(l));
+        return ordered ? (
+            <ol key={idx} className="list-decimal list-inside ml-4 space-y-1">
+                {lines.map((l, i) => (
+                    <li key={i}>{parseBold(l.replace(/^\d+\.\s+/, ""))}</li>
+                ))}
+            </ol>
+        ) : (
+            <ul key={idx} className="list-disc list-inside ml-4 space-y-1">
+                {lines.map((l, i) => (
+                    <li key={i}>{parseBold(l.replace(/^(-|\*)\s+/, ""))}</li>
+                ))}
+            </ul>
+        );
+    }
+    return (
+        <p key={idx} className="text-gray-700 leading-relaxed whitespace-pre-line">
+            {parseBold(paragraph)}
+        </p>
+    );
+};
+
+
 const Dashboard = () => {
     const [documents, setDocuments] = useState([]);
     const [file, setFile] = useState(null);
@@ -133,10 +177,9 @@ const Dashboard = () => {
 
         setLoading(true);
         try {
-            const res = await axios.post(`/documents/${selectedDocId}/ask/`, {
-                question,
-            });
-            setAnswer(res.data.answer);
+            const res = await axios.post(`/documents/${selectedDocId}/ask/`, { question });
+            // store raw response and friendly answer
+            setAnswer(res.data.answer ?? (res.data?.answer_text || String(res.data)));
             toast.success("Answer generated!");
         } catch (err) {
             console.error("Q&A failed", err);
@@ -162,7 +205,6 @@ const Dashboard = () => {
                 </p>
             </header>
 
-
             {loading && (
                 <div className="mb-6">
                     <div className="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -174,18 +216,13 @@ const Dashboard = () => {
                 <h2 className="text-2xl font-semibold mb-4">
                     {editingDocId ? "✏️ Edit Document" : "📤 Upload a New Document"}
                 </h2>
-                <form
-                    onSubmit={editingDocId ? handleUpdate : handleUpload}
-                    className="space-y-4"
-                >
+                <form onSubmit={editingDocId ? handleUpdate : handleUpload} className="space-y-4">
                     <input
                         type="text"
                         placeholder="Document title"
                         value={editingDocId ? editTitle : title}
                         onChange={(e) =>
-                            editingDocId
-                                ? setEditTitle(e.target.value)
-                                : setTitle(e.target.value)
+                            editingDocId ? setEditTitle(e.target.value) : setTitle(e.target.value)
                         }
                         required
                         className="w-full border px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -196,9 +233,7 @@ const Dashboard = () => {
                             type="file"
                             accept="application/pdf"
                             onChange={(e) =>
-                                editingDocId
-                                    ? setEditFile(e.target.files[0])
-                                    : setFile(e.target.files[0])
+                                editingDocId ? setEditFile(e.target.files[0]) : setFile(e.target.files[0])
                             }
                             className="w-full"
                             disabled={loading}
@@ -212,7 +247,6 @@ const Dashboard = () => {
                                     ? `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`
                                     : "No file selected"}
                         </p>
-
                     </div>
 
                     <div className="space-x-3">
@@ -250,9 +284,7 @@ const Dashboard = () => {
                             >
                                 <div className="text-lg font-medium text-gray-800 text-left">
                                     {doc.title}{" "}
-                                    <span className="text-sm text-gray-500">
-                                        ({doc.file.split("/").pop()})
-                                    </span>
+                                    <span className="text-sm text-gray-500">({doc.file.split("/").pop()})</span>
                                 </div>
                                 <div className="mt-2 md:mt-0 space-x-2 text-right">
                                     <button
@@ -291,16 +323,20 @@ const Dashboard = () => {
             {selectedDocId && (
                 <section className="w-full max-w-3xl text-center">
                     {(() => {
-                        const selectedDoc = documents.find(
-                            (doc) => doc.id === selectedDocId
-                        );
+                        const selectedDoc = documents.find((doc) => doc.id === selectedDocId);
                         return (
                             <h2 className="text-2xl font-semibold mb-4">
                                 ❓ Ask a Question about "{selectedDoc?.title}"
                             </h2>
                         );
                     })()}
-                    <div className="flex flex-col md:flex-row gap-4 justify-center">
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            handleAsk();
+                        }}
+                        className="flex flex-col md:flex-row gap-4 justify-center"
+                    >
                         <input
                             type="text"
                             value={question}
@@ -310,18 +346,39 @@ const Dashboard = () => {
                             disabled={loading}
                         />
                         <button
-                            onClick={handleAsk}
+                            type="submit"
                             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                             disabled={loading}
                         >
                             Ask
                         </button>
-                    </div>
+                    </form>
 
                     {answer && (
                         <div className="mt-6 bg-white p-4 border border-blue-100 rounded shadow-sm text-left">
-                            <strong className="text-blue-800">AI Answer:</strong>
-                            <p className="text-gray-700 mt-2">{answer}</p>
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <strong className="text-blue-800">AI Answer:</strong>
+                                    <div className="mt-2 space-y-3">
+                                        {formatAnswerBlocks(answer).map((block, i) => renderParagraph(block, i))}
+                                    </div>
+                                </div>
+
+                                <div className="ml-4 flex flex-col items-end gap-2">
+                                    <button
+                                        onClick={() => {
+                                            const txt = typeof answer === "string" ? answer : JSON.stringify(answer, null, 2);
+                                            navigator.clipboard.writeText(txt).then(
+                                                () => toast.success("Answer copied to clipboard!"),
+                                                () => toast.error("Copy failed")
+                                            );
+                                        }}
+                                        className="text-sm bg-gray-100 px-3 py-1 rounded hover:bg-gray-200"
+                                    >
+                                        Copy Answer
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </section>
@@ -329,8 +386,6 @@ const Dashboard = () => {
             <ToastContainer position="top-right" autoClose={3000} />
         </div>
     );
-
-
 };
 
 export default Dashboard;
