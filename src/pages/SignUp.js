@@ -90,8 +90,8 @@ const SignUp = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 flex items-center justify-center bg-gray-100 relative">
+   return (
+    <div className="min-h-screen min-w-screen bg-gradient-to-br  flex items-center justify-center relative">
       {toast.message && (
         <div
           className={`fixed top-10 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-md text-white z-50 ${
@@ -102,69 +102,86 @@ const SignUp = () => {
         </div>
       )}
 
-      <div className="w-full max-w-md bg-white shadow-md rounded-lg p-8">
-        <h1 className="text-2xl font-bold text-center text-blue-600 mb-2">Create Your Account</h1>
-        <p className="text-xs text-center text-gray-600 mb-6">Sign up to start using the DocAI.</p>
-
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Sign Up</h2>
-
-          <input
-            name="username"
-            value={form.username}
-            onChange={handleChange}
-            placeholder="Username"
-            required
-            disabled={loading}
-            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-              errors.username ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-500'
-            }`}
+      <div className="flex w-full h-full max-w-full max-h-full">
+        {/* Left side: vector graphic */}
+        <div className="hidden md:flex w-1/2 h-screen items-center justify-center">
+          <img
+            src="/vector2.jpg"
+            alt="An illustration of a document, pen, and lock, symbolizing secure document management and signing."
+            className="object-cover"
           />
-          {errors.username && <div className="text-sm text-red-600 mt-1">{errors.username}</div>}
+        </div>
 
-          <input
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="Email"
-            required
-            disabled={loading}
-            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-              errors.email ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-500'
-            }`}
-          />
-          {errors.email && <div className="text-sm text-red-600 mt-1">{errors.email}</div>}
+        {/* Right side: signup form */}
+        <div className="w-full md:w-1/2 h-screen flex items-center justify-center p-8 bg-white shadow-lg">
+          <div className="w-full max-w-md">
+            <h1 className="text-2xl font-bold text-center text-blue-600 mb-2">Create Your Account</h1>
+            <p className="text-xs text-center text-gray-600 mb-6">Sign up to start using the DocAI.</p>
 
-          <input
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            placeholder="Password"
-            type="password"
-            required
-            disabled={loading}
-            className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-              errors.password ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-500'
-            }`}
-          />
-          {errors.password && <div className="text-sm text-red-600 mt-1">{errors.password}</div>}
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">Sign Up</h2>
 
-          {errors.non_field && <div className="text-sm text-red-600 mt-1">{errors.non_field}</div>}
+              <input
+                name="username"
+                value={form.username}
+                onChange={handleChange}
+                placeholder="Username"
+                required
+                disabled={loading}
+                className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                  errors.username ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-500'
+                }`}
+              />
+              {errors.username && <div className="text-sm text-red-600 mt-1">{errors.username}</div>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-2 px-4 rounded-md transition duration-300 ${
-              loading ? 'bg-blue-400 cursor-not-allowed text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
-            }`}
-          >
-            {loading ? 'Signing Up...' : 'Sign Up'}
-          </button>
-        </form>
+              <input
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="Email"
+                required
+                disabled={loading}
+                className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                  errors.email ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-500'
+                }`}
+              />
+              {errors.email && <div className="text-sm text-red-600 mt-1">{errors.email}</div>}
 
-        <p className="text-center text-gray-600 mt-4">
-          Already have an account? <Link to="/" className="text-blue-600 hover:underline">Log In</Link>
-        </p>
+              <input
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Password"
+                type="password"
+                required
+                disabled={loading}
+                className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                  errors.password ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-500'
+                }`}
+              />
+              {errors.password && <div className="text-sm text-red-600 mt-1">{errors.password}</div>}
+
+              {errors.non_field && <div className="text-sm text-red-600 mt-1">{errors.non_field}</div>}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full py-2 px-4 rounded-md transition duration-300 ${
+                  loading ? 'bg-blue-400 cursor-not-allowed text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
+              >
+                {loading ? 'Signing Up...' : 'Sign Up'}
+              </button>
+            </form>
+
+            <p className="text-center text-gray-600 mt-4">
+              Already have an account?{' '}
+              <Link to="/" className="text-blue-600 hover:underline">
+                Log In
+              </Link>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
