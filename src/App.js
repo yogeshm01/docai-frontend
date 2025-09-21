@@ -5,7 +5,8 @@ import SignUp from './pages/SignUp';
 import Dashboard from './pages/Dashboard';
 import Navbar from './components/Navbar'; 
 import LandingPage from './pages/LandingPage';
-import Footer from './components/Footer'; // Assuming you have a Footer component
+import Footer from './components/Footer';
+import Contact from './pages/contact';
 import './App.css';
 import './index.css';
 
@@ -23,6 +24,7 @@ const AppWrapper = () => {
         <Route path="/landing" element={<LandingPage />} />
         <Route path="/" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
       {shouldShowNavbar && <Footer />}
