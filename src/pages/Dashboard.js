@@ -215,7 +215,7 @@ const Dashboard = () => {
         {/* Left: Upload + List */}
         <div>
           <header className="mb-6">
-            <h1 className="text-2xl font-bold text-blue-700 dark:text-blue-400">
+            <h1 className="text-2xl font-bold text-blue-600">
               DocAI Dashboard
             </h1>
             <p className="mt-1 text-sm text-foreground/70">

@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 import LandingPage from './pages/LandingPage';
 import Footer from './components/Footer';
 import Contact from './pages/contact';
+import ScrollToTop from './components/ScrollToTop';
 import './App.css';
 import './index.css';
 
@@ -34,6 +35,7 @@ const AppWrapper = () => {
 
 const App = () => (
   <Router>
+    <ScrollToTop />
     <AppWrapper />
   </Router>
 );

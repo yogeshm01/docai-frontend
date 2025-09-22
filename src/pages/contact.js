@@ -30,7 +30,7 @@ const Contact = () => {
   return (
     <div className="bg-background text-foreground min-h-screen py-12 px-4">
       <div className="max-w-2xl mx-auto bg-card border border-border rounded-xl shadow p-8">
-        <h1 className="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-4">
+        <h1 className="text-2xl font-bold text-blue-600 mb-4">
           Contact Us
         </h1>
         <p className="mb-6 text-sm text-foreground/70">

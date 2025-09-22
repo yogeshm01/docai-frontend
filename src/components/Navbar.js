@@ -21,8 +21,6 @@ const Navbar = () => {
     { path: "/landing", label: "Home", isHash: false },
     { path: "/dashboard", label: "Dashboard", isHash: false },
     { path: "/contact", label: "Contact", isHash: false },
-    { path: "#how", label: "How it works", isHash: true },
-    { path: "#testimonials", label: "Testimonials", isHash: true },
   ];
 
   const isActive = (path) =>

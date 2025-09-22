@@ -77,25 +77,7 @@ export default function LandingPage() {
                     </div>
                 </div>
             </section>
-
-            {/* Logos */}
-            <section className="border-y border-border/60 bg-card/40">
-                <div className="container mx-auto px-4 py-10">
-                    <div className="grid grid-cols-2 items-center gap-6 opacity-70 sm:grid-cols-3 md:grid-cols-5">
-                        {[
-                            "Dropbox",
-                            "Notion",
-                            "Google Drive",
-                            "OneDrive",
-                            "Slack",
-                        ].map((name) => (
-                            <div key={name} className="flex items-center justify-center">
-                                <div className="text-sm font-semibold tracking-wide text-foreground/60">{name}</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+            <hr className="border-border/60" />
 
             {/* Features */}
             <section id="features" className="container mx-auto px-4 py-20">
@@ -180,7 +162,7 @@ export default function LandingPage() {
                 </div>
             </section>
 
-
+            <hr className="border-border/60" />
 
             {/* How it works */}
             <section id="how" className="bg-card/40 py-20">
@@ -220,55 +202,56 @@ export default function LandingPage() {
                 </div>
             </section>
 
+
             {/* Testimonials */}
             <section id="testimonials" className="container mx-auto px-4 py-20">
-  <div className="mx-auto max-w-2xl text-center">
-    <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Teams love DocAI</h2>
-    <p className="mt-3 text-foreground/75">Real feedback from users working with PDFs smarter.</p>
-  </div>
-  <div className="mt-12 grid gap-6 md:grid-cols-3">
-    {[
-      {
-        name: "Ava Thompson",
-        role: "Operations Manager",
-        quote: "Uploading and managing PDFs has never been easier. The AI answers save us so much time.",
-        rating: 5,
-      },
-      {
-        name: "Miguel Santos",
-        role: "Customer Support Lead",
-        quote: "The AI Q&A feature helps our team find document insights instantly with reliable citations.",
-        rating: 4,
-      },
-      {
-        name: "Jin Park",
-        role: "CTO",
-        quote: "Secure authentication and permissions gave us confidence for full enterprise adoption.",
-        rating: 5,
-      },
-    ].map((t) => (
-      <figure key={t.name} className="rounded-xl border border-border bg-card p-6 shadow-sm">
-        <blockquote className="text-sm text-foreground/80">“{t.quote}”</blockquote>
-        <div className="mt-3 flex space-x-1">
-          {[...Array(5)].map((_, i) => (
-            <svg
-              key={i}
-              className={`h-5 w-5 ${i < t.rating ? "text-yellow-400" : "text-gray-300"}`}
-              fill="currentColor"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M10 1 L12 7 L18 7 L13 11 L15 17 L10 13 L5 17 L7 11 L2 7 L8 7 Z" />
-            </svg>
-          ))}
-        </div>
-        <figcaption className="mt-4 text-sm font-medium">
-          <span className="block">{t.name}</span>
-          <span className="block text-foreground/60">{t.role}</span>
-        </figcaption>
-      </figure>
-    ))}
-  </div>
-</section>
+                <div className="mx-auto max-w-2xl text-center">
+                    <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">People love DocAI</h2>
+                    <p className="mt-3 text-foreground/75">Real feedback from users working with PDFs smarter.</p>
+                </div>
+                <div className="mt-12 grid gap-6 md:grid-cols-3">
+                    {[
+                        {
+                            name: "Ava Thompson",
+                            role: "Operations Manager",
+                            quote: "Uploading and managing PDFs has never been easier. The AI answers save us so much time.",
+                            rating: 5,
+                        },
+                        {
+                            name: "Miguel Santos",
+                            role: "Customer Support Lead",
+                            quote: "The AI Q&A feature helps our team find document insights instantly with reliable citations.",
+                            rating: 4,
+                        },
+                        {
+                            name: "Jin Park",
+                            role: "CTO",
+                            quote: "Secure authentication and permissions gave us confidence for full enterprise adoption.",
+                            rating: 5,
+                        },
+                    ].map((t) => (
+                        <figure key={t.name} className="rounded-xl border border-border bg-card p-6 shadow-sm">
+                            <blockquote className="text-sm text-foreground/80">“{t.quote}”</blockquote>
+                            <div className="mt-3 flex space-x-1">
+                                {[...Array(5)].map((_, i) => (
+                                    <svg
+                                        key={i}
+                                        className={`h-5 w-5 ${i < t.rating ? "text-yellow-400" : "text-gray-300"}`}
+                                        fill="currentColor"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path d="M10 1 L12 7 L18 7 L13 11 L15 17 L10 13 L5 17 L7 11 L2 7 L8 7 Z" />
+                                    </svg>
+                                ))}
+                            </div>
+                            <figcaption className="mt-4 text-sm font-medium">
+                                <span className="block">{t.name}</span>
+                                <span className="block text-foreground/60">{t.role}</span>
+                            </figcaption>
+                        </figure>
+                    ))}
+                </div>
+            </section>
 
 
             {/* CTA */}
