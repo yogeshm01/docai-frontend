@@ -64,7 +64,7 @@ const SignUp = () => {
 
     setLoading(true);
     try {
-      await axios.post('/auth/register/', form);
+      await axios.post('/auth/register', form);
       showToast('Registration successful! Please log in.', 'success');
       setTimeout(() => navigate('/'), 1500);
     } catch (err) {
