@@ -21,9 +21,10 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await axios.post('/auth/login/', form);
-      localStorage.setItem('access', res.data.access);
-      localStorage.setItem('refresh', res.data.refresh);
+      const res = await axios.post('/auth/login', form);
+      // Store JWT and user details as returned by backend
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
       navigate('/landing');
     } catch (err) {
       showToast('Login failed. Check your credentials.');
