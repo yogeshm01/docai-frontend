@@ -73,7 +73,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!localStorage.getItem("access")) {
+    if (!localStorage.getItem("token")) {
       window.location.href = "/";
     }
   }, []);
@@ -81,7 +81,9 @@ const Dashboard = () => {
   const fetchDocuments = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/documents/");
+      const user = JSON.parse(localStorage.getItem("user") || "null");
+      const query = user?.id ? `?userId=${user.id}` : "";
+      const res = await axios.get(`/documents${query}`);
       setDocuments(res.data);
     } catch (err) {
       console.error("Failed to load documents:", err);
@@ -101,10 +103,12 @@ const Dashboard = () => {
     const formData = new FormData();
     formData.append("title", title);
     formData.append("file", file);
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    if (user?.id) formData.append("userId", String(user.id));
 
     setLoading(true);
     try {
-      await axios.post("/documents/", formData, {
+      await axios.post("/documents", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       toast.success("Document uploaded successfully!");
@@ -122,7 +126,7 @@ const Dashboard = () => {
   const handleDelete = async (id) => {
     setLoading(true);
     try {
-      await axios.delete(`/documents/${id}/`);
+      await axios.delete(`/documents/${id}`);
       toast.success("Document deleted!");
       if (selectedDocId === id) {
         setSelectedDocId(null);
@@ -137,7 +141,8 @@ const Dashboard = () => {
       await fetchDocuments();
     } catch (err) {
       console.error("Delete failed", err);
-      toast.error("Delete failed.");
+      const msg = err.response?.data?.error || "Delete failed.";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -161,24 +166,8 @@ const Dashboard = () => {
     e.preventDefault();
     if (!editTitle) return;
 
-    const formData = new FormData();
-    formData.append("title", editTitle);
-    if (editFile) formData.append("file", editFile);
-
-    setLoading(true);
-    try {
-      await axios.put(`/documents/${editingDocId}/`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      toast.success("Document updated!");
-      cancelEdit();
-      await fetchDocuments();
-    } catch (err) {
-      console.error("Update failed", err);
-      toast.error("Update failed.");
-    } finally {
-      setLoading(false);
-    }
+    // Not supported by backend currently
+    toast.info("Update is not supported by the backend API.");
   };
 
   const handleAsk = async () => {
@@ -186,7 +175,7 @@ const Dashboard = () => {
 
     setLoading(true);
     try {
-      const res = await axios.post(`/documents/${selectedDocId}/ask/`, {
+      const res = await axios.post(`/documents/${selectedDocId}/ask`, {
         question,
       });
       setAnswer(res.data.answer ?? res.data.answer_text ?? String(res.data));
@@ -201,8 +190,8 @@ const Dashboard = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("access");
-    localStorage.removeItem("refresh");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     window.location.href = "/";
   };
 
