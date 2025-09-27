@@ -7,13 +7,13 @@ const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const accessToken = localStorage.getItem("access");
-    setIsLoggedIn(!!accessToken);
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
   }, [location.pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem("access");
-    localStorage.removeItem("refresh");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     window.location.href = "/";
   };
 
