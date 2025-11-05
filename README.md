@@ -6,11 +6,11 @@ Welcome to **DocAI**, an intelligent document management system where users can 
 
 ## 🌟 Features
 
-- 🔐 User Authentication (JWT-based)
-- 📤 Upload, update, and delete PDF documents
-- 🧠 Ask questions about your documents using AI
-- 🗂️ Organized  for document management
-- 🎨 Clean, responsive UI built with React and Tailwind CSS
+- 🔐 User Authentication (JWT-based)  
+- 📤 Upload, update, and delete PDF documents  
+- 🧠 Ask questions about your documents using AI  
+- 🗂️ Organized dashboard for document management  
+- 🎨 Clean, responsive UI built with React and Tailwind CSS  
 
 ---
 
@@ -24,35 +24,30 @@ Welcome to **DocAI**, an intelligent document management system where users can 
 - Hosted on **Vercel**
 
 ### 🔹 Backend
-- [Django](https://www.djangoproject.com/)
-- [Django REST Framework](https://www.django-rest-framework.org/)
-- JWT Authentication (`djangorestframework-simplejwt`)
+- [Node.js](https://nodejs.org/)
+- [Express.js](https://expressjs.com/)
+- [MongoDB](https://www.mongodb.com/) (via Mongoose)
+- JWT Authentication (`jsonwebtoken`)
+- [Multer](https://github.com/expressjs/multer) for file uploads
 - Hosted on **Render.com**
+- Repository: [https://github.com/yogeshm01/docai-backend](https://github.com/yogeshm01/docai-backend)
 
 ### 🔹 AI Integration
-- [Gemini API (Google AI)](https://ai.google.dev/) or alternative model
-- Text extraction using built-in parsing (OCR if needed)
+- [Gemini API (Google AI)](https://ai.google.dev/) or an alternative LLM model  
+- Text extraction from PDFs using built-in parsing (OCR supported if needed)
 
 ---
 
 ## ⚙️ How to Run Locally
 
-### 🔹 Backend (Django)
+### 🔹 Backend (Node.js + Express)
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/docai-portal.git
-cd docai-portal/backend
-python -m venv venv
-source venv/bin/activate  # For Windows: venv\Scripts\activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
+git clone https://github.com/yogeshm01/docai-backend.git
+cd docai-backend
+npm install
+npm run dev
 
-- Make sure to set your .env file with:
-SECRET_KEY=your-secret
-DEBUG=True
-GEMINI_API_KEY=your-gemini-api-key
-```
 
 ### 🔹 Frontend (React)
 
@@ -66,7 +61,7 @@ npm start
 ### 🌐 Hosting Links
 
 - Frontend: [https://sabapplier-frontend.vercel.app/](https://sabapplier-frontend.vercel.app/)
-- Backend: [https://sabapplier-backend.onrender.com](https://sabapplier-backend.onrender.com)
+- Backend: [https://docai-backend-nnvs.onrender.com](https://docai-backend-nnvs.onrender.com)
 
 ## 📸 Screenshots
 
