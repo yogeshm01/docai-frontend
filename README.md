@@ -26,7 +26,7 @@ Welcome to **DocAI**, an intelligent document management system where users can 
 ### 🔹 Backend
 - [Node.js](https://nodejs.org/)
 - [Express.js](https://expressjs.com/)
-- [MongoDB](https://www.mongodb.com/) (via Mongoose)
+- [SQLite](https://sqlite.org/) (via Mongoose)
 - JWT Authentication (`jsonwebtoken`)
 - [Multer](https://github.com/expressjs/multer) for file uploads
 - Hosted on **Render.com**
