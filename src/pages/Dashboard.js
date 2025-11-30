@@ -4,7 +4,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 import axios from "../api/axios";
 
-/* Helpers for formatting AI responses */
+// --------------------------------- Formatting AI responses ---------------------------------
 const formatAnswerBlocks = (text) => {
   if (!text) return [];
   const normalized = String(text).replace(/\r\n/g, "\n");
@@ -15,6 +15,7 @@ const formatAnswerBlocks = (text) => {
   return paragraphs;
 };
 
+// ---------------------------- Render paragraphs helper function ----------------------------
 const renderParagraph = (paragraph, idx) => {
   const lines = paragraph
     .split("\n")
@@ -72,19 +73,41 @@ const Dashboard = () => {
 
   const [loading, setLoading] = useState(false);
 
+  const [selectedDocIds, setSelectedDocIds] = useState([]);
+
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("uploadedAt_desc");
+  const [filter, setFilter] = useState("all");
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(4);
+  const [totalPages, setTotalPages] = useState(1);
+
+
   useEffect(() => {
     if (!localStorage.getItem("token")) {
       window.location.href = "/";
     }
   }, []);
 
-  const fetchDocuments = async () => {
+  // ---------------------------- Fetch documents function ----------------------------
+  const fetchDocuments = async (overrides = {}) => {
     setLoading(true);
     try {
+      const params = {
+        search,
+        sort,
+        filter,
+        page: currentPage,
+        limit,
+        ...overrides, // allow direct override when calling
+      };
       const user = JSON.parse(localStorage.getItem("user") || "null");
       const query = user?.id ? `?userId=${user.id}` : "";
-      const res = await axios.get(`/documents${query}`);
-      setDocuments(res.data);
+      const res = await axios.get(`/documents${query}`, { params });
+      setDocuments(res.data.data || []);
+      setCurrentPage(res.data.page || 1);
+      setTotalPages(res.data.totalPages || 1);
     } catch (err) {
       console.error("Failed to load documents:", err);
     } finally {
@@ -96,6 +119,7 @@ const Dashboard = () => {
     fetchDocuments();
   }, []);
 
+  // ---------------------------- Upload document function ----------------------------
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!file || !title) return;
@@ -114,7 +138,9 @@ const Dashboard = () => {
       toast.success("Document uploaded successfully!");
       setFile(null);
       setTitle("");
-      await fetchDocuments();
+      const firstPage = 1;
+      setCurrentPage(firstPage);
+      await fetchDocuments({ page: firstPage });
     } catch (err) {
       console.error("Upload failed", err);
       toast.error("Upload failed.");
@@ -123,6 +149,7 @@ const Dashboard = () => {
     }
   };
 
+  // ---------------------------- Delete document function ----------------------------
   const handleDelete = async (id) => {
     setLoading(true);
     try {
@@ -148,6 +175,29 @@ const Dashboard = () => {
     }
   };
 
+  // ---------------------------- Bulk delete documents function ----------------------------
+  const handleBulkDelete = async () => {
+    if (selectedDocIds.length === 0) return;
+    if (!window.confirm(`Delete ${selectedDocIds.length} documents?`)) return;
+
+    setLoading(true);
+    try {
+      await axios.delete("/documents", {
+        data: { ids: selectedDocIds },
+      });
+      toast.success("Selected documents deleted!");
+      setSelectedDocIds([]);
+      await fetchDocuments();
+    } catch (err) {
+      console.error("Bulk delete failed", err);
+      const msg = err.response?.data?.error || "Bulk delete failed.";
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ---------------------------- Start edit document function ----------------------------
   const startEdit = (doc) => {
     setEditingDocId(doc.id);
     setEditTitle(doc.title);
@@ -162,14 +212,89 @@ const Dashboard = () => {
     setEditFile(null);
   };
 
+  // ---------------------------- Update document function ----------------------------
   const handleUpdate = async (e) => {
     e.preventDefault();
-    if (!editTitle) return;
+    if (!editTitle || !editingDocId) return;
 
-    // Not supported by backend currently
-    toast.info("Update is not supported by the backend API.");
+    setLoading(true);
+    try {
+      // 1) Update title (PATCH /documents/:id)
+      await axios.patch(`/documents/${editingDocId}`, {
+        title: editTitle,
+      });
+
+      // 2) If user selected a new file, update file (PATCH /documents/:id/file)
+      if (editFile) {
+        const formData = new FormData();
+        formData.append("file", editFile);
+
+        await axios.patch(`/documents/${editingDocId}/file`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      }
+
+      toast.success("Document updated successfully!");
+      setEditingDocId(null);
+      setEditTitle("");
+      setEditFile(null);
+      await fetchDocuments();
+    } catch (err) {
+      console.error("Update failed", err);
+      const msg = err.response?.data?.error || "Update failed.";
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // ---------------------------- Duplicate document function ----------------------------
+  const handleDuplicate = async (id) => {
+    setLoading(true);
+    try {
+      await axios.post(`/documents/${id}/duplicate`);
+      toast.success("Document duplicated!");
+      await fetchDocuments();
+    } catch (err) {
+      console.error("Duplicate failed", err);
+      const msg = err.response?.data?.error || "Duplicate failed.";
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ---------------------------- Search documents function ----------------------------
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearch(value);
+    setCurrentPage(1);
+  };
+  useEffect(() => {
+    const firstPage = 1;
+    const timeout = setTimeout(() => {
+      fetchDocuments({ search, page: firstPage });
+    }, 500); // 500ms debounce
+    return () => clearTimeout(timeout); // cleanup automatically
+  }, [search]);
+  
+
+  // ---------------------------- Sort documents function ----------------------------
+  const handleSortChange = (e) => {
+    const value = e.target.value;
+    setSort(value);
+    setCurrentPage(1);
+    fetchDocuments({ sort: value });
+  };
+
+  const handleFilterChange = (e) => {
+    const value = e.target.value;
+    setFilter(value);
+    setCurrentPage(1);
+    fetchDocuments({ filter: value });
+  };
+
+  // ---------------------------- Ask question function ----------------------------
   const handleAsk = async () => {
     if (!question) return;
 
@@ -189,27 +314,31 @@ const Dashboard = () => {
     }
   };
 
+  // ---------------------------- Logout function ----------------------------
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     window.location.href = "/";
   };
 
-  // ✅ Fix: define selectedDoc from selectedDocId
+  // ---------------------------- Selected doc from list function ----------------------------
   const selectedDoc = documents.find((doc) => doc.id === selectedDocId);
+
 
   return (
     <div className="bg-background text-foreground">
       <div className="container mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-10 md:grid-cols-2">
-        {/* Left: Upload + List */}
+        {/* ---------------------------- Left: Upload + List ---------------------------- */}
         <div>
-          <header className="mb-6">
-            <h1 className="text-2xl font-bold text-blue-600">
-              DocAI Dashboard
-            </h1>
-            <p className="mt-1 text-sm text-foreground/70">
-              Upload • Manage • Ask Questions — Powered by AI
-            </p>
+          <header className="mb-6 flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-blue-600">
+                DocAI Dashboard
+              </h1>
+              <p className="mt-1 text-sm text-foreground/70">
+                Upload • Manage • Ask Questions — Powered by AI
+              </p>
+            </div>
           </header>
 
           {loading && (
@@ -219,7 +348,7 @@ const Dashboard = () => {
             </div>
           )}
 
-          {/* Upload / Edit */}
+          {/* ---------------------------- Upload / Edit ---------------------------- */}
           <section className="mb-8 rounded-xl border border-border bg-card p-5 shadow-sm">
             <h2 className="mb-4 text-lg font-semibold">
               {editingDocId ? "Edit Document" : "Upload a New Document"}
@@ -257,14 +386,14 @@ const Dashboard = () => {
                   {editingDocId
                     ? editFile
                       ? `Selected: ${editFile.name} (${(
-                          editFile.size / 1024
-                        ).toFixed(1)} KB)`
+                        editFile.size / 1024
+                      ).toFixed(1)} KB)`
                       : "No new file selected"
                     : file
-                    ? `Selected: ${file.name} (${(file.size / 1024).toFixed(
+                      ? `Selected: ${file.name} (${(file.size / 1024).toFixed(
                         1
                       )} KB)`
-                    : "No file selected"}
+                      : "No file selected"}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -288,63 +417,180 @@ const Dashboard = () => {
             </form>
           </section>
 
-          {/* Document List */}
+          {/* ---------------------------- Document List ---------------------------- */}
           <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
-            <h2 className="mb-4 text-lg font-semibold">Your Documents</h2>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Your Documents</h2>
+              {selectedDocIds.length > 0 && (
+                <button
+                  disabled={loading || selectedDocIds.length === 0}
+                  onClick={handleBulkDelete}
+                  className="rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                >
+                  Delete Selected ({selectedDocIds.length})
+                </button>
+              )}
+            </div>
+            <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-border bg-background/50 p-3">
+              {/* ---------------------------- Search ---------------------------- */}
+              <input
+                type="text"
+                value={search}
+                onChange={handleSearchChange}
+                placeholder="Search title..."
+                className="w-44 rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              />
+
+              {/* ---------------------------- Sort ---------------------------- */}
+              <select
+                value={sort}
+                onChange={handleSortChange}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="uploadedAt_desc">Newest first</option>
+                <option value="uploadedAt_asc">Oldest first</option>
+                <option value="title_asc">Title A–Z</option>
+                <option value="title_desc">Title Z–A</option>
+              </select>
+
+              {/* ---------------------------- Filter ---------------------------- */}
+              <select
+                value={filter}
+                onChange={handleFilterChange}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All time</option>
+                <option value="today">Today</option>
+                <option value="week">Last 7 days</option>
+                <option value="month">Last 30 days</option>
+              </select>
+            </div>
+
+            {/* ---------------------------- Documents list + Pagination ---------------------------- */}
             {documents.length === 0 ? (
               <p className="text-sm text-foreground/60">No documents found.</p>
             ) : (
-              <ul className="space-y-3">
-                {documents.map((doc) => (
-                  <li
-                    key={doc.id}
-                    className="rounded border border-border bg-background p-3"
-                  >
-                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                      <div className="text-left">
-                        <div className="text-sm font-medium">{doc.title}</div>
-                        {doc.file && (
-                          <div className="text-xs text-foreground/60">
-                            {String(doc.file).split("/").pop()}
+              <>
+                <ul className="space-y-3">
+                  {documents.map((doc) => (
+                    <li
+                      key={doc.id}
+                      className="rounded border border-border bg-background p-3"
+                    >
+                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div className="flex items-start gap-2">
+                          <input
+                            type="checkbox"
+                            className="mt-1"
+                            checked={selectedDocIds.includes(doc.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedDocIds((prev) => [...prev, doc.id]);
+                              } else {
+                                setSelectedDocIds((prev) =>
+                                  prev.filter((id) => id !== doc.id)
+                                );
+                              }
+                            }}
+                          />
+                          <div className="text-left">
+                            <div className="text-sm font-medium">
+                              {doc.title}
+                            </div>
+                            {doc.filePath && (
+                              <div className="text-xs text-foreground/60 break-all max-w-[180px]">
+                                {String(doc.filePath).split("/").pop()}
+                              </div>
+                            )}
                           </div>
-                        )}
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 md:justify-end">
+                          <button
+                            onClick={() => startEdit(doc)}
+                            disabled={loading}
+                            className="rounded bg-yellow-500 px-3 py-1 text-sm font-medium text-white hover:bg-yellow-600"
+                          >
+                            Edit
+                          </button>
+
+                          <button
+                            onClick={() => handleDuplicate(doc.id)}
+                            disabled={loading}
+                            className="rounded bg-emerald-600 px-3 py-1 text-sm font-medium text-white hover:bg-emerald-700"
+                          >
+                            Duplicate
+                          </button>
+
+                          <button
+                            onClick={() => handleDelete(doc.id)}
+                            disabled={loading}
+                            className="rounded bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700"
+                          >
+                            Delete
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setSelectedDocId(doc.id);
+                              setAnswer("");
+                              setQuestion("");
+                            }}
+                            disabled={loading}
+                            className="rounded bg-blue-600 px-3 py-1 text-sm font-medium text-white hover:bg-blue-700"
+                          >
+                            Ask
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-2 md:justify-end">
-                        <button
-                          onClick={() => startEdit(doc)}
-                          disabled={loading}
-                          className="rounded bg-yellow-500 px-3 py-1 text-sm font-medium text-white hover:bg-yellow-600"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(doc.id)}
-                          disabled={loading}
-                          className="rounded bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700"
-                        >
-                          Delete
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedDocId(doc.id);
-                            setAnswer("");
-                            setQuestion("");
-                          }}
-                          disabled={loading}
-                          className="rounded bg-blue-600 px-3 py-1 text-sm font-medium text-white hover:bg-blue-700"
-                        >
-                          Ask
-                        </button>
-                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* ---------------------------- Pagination controls ---------------------------- */}
+                {totalPages > 1 && (
+                  <div className="mt-4 flex items-center justify-between text-xs text-foreground/70">
+                    <span>
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          if (currentPage > 1 && !loading) {
+                            const newPage = currentPage - 1;
+                            setCurrentPage(newPage);
+                            fetchDocuments({ page: newPage });
+                          }
+                        }}
+                        disabled={currentPage === 1 || loading}
+                        className="rounded border border-input px-3 py-1 disabled:opacity-50 hover:bg-accent hover:text-accent-foreground"
+                      >
+                        Previous
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          if (currentPage < totalPages && !loading) {
+                            const newPage = currentPage + 1;
+                            setCurrentPage(newPage);
+                            fetchDocuments({ page: newPage });
+                          }
+                        }}
+                        disabled={currentPage === totalPages || loading}
+                        className="rounded border border-input px-3 py-1 disabled:opacity-50 hover:bg-accent hover:text-accent-foreground"
+                      >
+                        Next
+                      </button>
                     </div>
-                  </li>
-                ))}
-              </ul>
+                  </div>
+                )}
+
+              </>
             )}
           </section>
         </div>
 
-        {/* Right: Q&A */}
+        {/* ---------------------------- Right: Q&A ---------------------------- */}
         <div className="md:sticky md:top-24 md:h-[calc(100vh-6rem)] md:overflow-auto">
           <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
             <h2 className="mb-1 text-lg font-semibold">
@@ -422,7 +668,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ✅ Toast messages will show here */}
+      {/* ---------------------------- Toast messages ---------------------------- */}
       <ToastContainer position="bottom-right" autoClose={3000} />
     </div>
   );

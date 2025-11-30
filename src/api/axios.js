@@ -1,16 +1,12 @@
 import axios from 'axios';
 
-const PROD_BASE_URL = "https://docai-backend-nnvs.onrender.com/api";
-const LOCAL_BASE_URL = "http://127.0.0.1:8000/api"; // backend/src/server.js default
-
-// Prefer explicit env var, then auto-detect localhost, else production
-const envBaseUrl = process.env.REACT_APP_API_URL;
-const isLocalhost = typeof window !== 'undefined' && /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname);
-const BASE_URL = envBaseUrl || (isLocalhost ? LOCAL_BASE_URL : PROD_BASE_URL);
+const BASE_URL = "https://docai-backend-nnvs.onrender.com/api";
+const LOCAL_BASE_URL = "http://127.0.0.1:8000/api";
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
 });
+
 
 // Request interceptor to add token
 axiosInstance.interceptors.request.use(

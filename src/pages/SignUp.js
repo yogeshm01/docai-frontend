@@ -5,37 +5,39 @@ import { useNavigate, Link } from 'react-router-dom';
 const SignUp = () => {
   const [form, setForm] = useState({ username: '', email: '', password: '' });
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({}); // { username, email, password, non_field }
+  const [errors, setErrors] = useState({}); 
   const [toast, setToast] = useState({ message: '', type: '' });
   const navigate = useNavigate();
 
+  // -------------------- Show Toast --------------------
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast({ message: '', type: '' }), 3000);
   };
 
+  // -------------------- Validate Email, Password, Username --------------------
   const validateClientSide = () => {
     const e = {};
     // Password: minimum length 6
     if (!form.password || form.password.length < 6) {
       e.password = 'Password must be at least 6 characters.';
     }
-    // Optional: simple email format check
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       e.email = 'Please enter a valid email address.';
     }
-    // Optional: username length
     if (!form.username || form.username.length < 3) {
       e.username = 'Username must be at least 3 characters.';
     }
     return e;
   };
 
+  // -------------------- Handle Change --------------------
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setErrors({ ...errors, [e.target.name]: '' });
   };
 
+  // -------------------- Normalize Error --------------------
   const normalizeErrorPayload = (data) => {
     const out = {};
     if (!data) return out;
@@ -50,14 +52,13 @@ const SignUp = () => {
     return out;
   };
 
+  // -------------------- Handle Submit --------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
-    // Client-side validation
     const clientErrors = validateClientSide();
     if (Object.keys(clientErrors).length) {
       setErrors(clientErrors);
-      // show the first client-side message as toast
       showToast(Object.values(clientErrors)[0], 'error');
       return;
     }
@@ -73,6 +74,7 @@ const SignUp = () => {
         showToast('Network error. Please try again.', 'error');
       } else {
         const normalized = normalizeErrorPayload(err.response.data);
+        console.log(normalized);
         setErrors(normalized);
 
         if (normalized.email?.toLowerCase().includes('exist') || normalized.username?.toLowerCase().includes('exist')) {
@@ -103,7 +105,7 @@ const SignUp = () => {
       )}
 
       <div className="flex w-full h-full max-w-full max-h-full">
-        {/* Left side: vector graphic */}
+        {/* --------------------------- Left side: vector graphic --------------------------- */}
         <div className="hidden md:flex w-1/2 h-screen items-center justify-center">
           <img
             src="/vector2.jpg"
@@ -112,7 +114,7 @@ const SignUp = () => {
           />
         </div>
 
-        {/* Right side: signup form */}
+        {/* --------------------------- Right side: signup form --------------------------- */}
         <div className="w-full md:w-1/2 h-screen flex items-center justify-center p-8 bg-white shadow-lg">
           <div className="w-full max-w-md">
             <h1 className="text-2xl font-bold text-center text-blue-600 mb-2">Create Your Account</h1>
