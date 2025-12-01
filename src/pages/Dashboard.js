@@ -494,7 +494,7 @@ const Dashboard = () => {
                             }}
                           />
                           <div className="text-left">
-                            <div className="text-sm font-medium">
+                            <div className="text-sm font-medium text-foreground/60 break-all">
                               {doc.title}
                             </div>
                             {doc.filePath && (
